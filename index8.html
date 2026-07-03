@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Master</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#667eea,#764ba2);
+    padding:20px;
+}
+
+/* DARK MODE */
+.dark{
+    background:#1a1a1a;
+}
+
+.container{
+    width:100%;
+    max-width:650px;
+    background:white;
+    padding:30px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.2);
+}
+
+.dark .container{
+    background:#2b2b2b;
+    color:white;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:10px;
+}
+
+.option{
+    display:block;
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border-radius:10px;
+    border:2px solid #ddd;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.option:hover{
+    background:#4361ee;
+    color:white;
+}
+
+#nextBtn{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    background:#4361ee;
+    color:white;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.hidden{ display:none; }
+
+#themeBtn{
+    float:right;
+    padding:8px 12px;
+    border:none;
+    border-radius:8px;
+    background:#222;
+    color:white;
+    cursor:pointer;
+}
+
+#timer, #level{
+    font-weight:bold;
+    margin:8px 0;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<button id="themeBtn">🌙 Dark Mode</button>
+
+<div id="quizBox">
+
+<h1>🧠 Quiz Master</h1>
+
+<p id="progress"></p>
+<p id="level"></p>
+<p id="timer">⏳ Time Left: 15s</p>
+
+<h2 id="question"></h2>
+
+<div id="options"></div>
+
+<button id="nextBtn" disabled>Next Question</button>
+
+</div>
+
+<div id="resultBox" class="hidden">
+
+<h2>🎉 Result</h2>
+
+<p>Total: <span id="total"></span></p>
+<p>Correct: <span id="correct"></span></p>
+<p>Wrong: <span id="wrong"></span></p>
+<p>Percentage: <span id="percentage"></span>%</p>
+<p>Status: <span id="status"></span></p>
+
+<button onclick="restartQuiz()">Restart</button>
+
+</div>
+
+</div>
+
+<script>
+
+/* QUESTIONS */
+const questions = [
+{q:"HTML full form?", options:["Hyper Text Markup Language","Home Tool","Java","None"], answer:0},
+{q:"CSS used for?", options:["Styling","Logic","DB","OS"], answer:0},
+{q:"JS used for?", options:["Logic","Design","Cook","None"], answer:0},
+{q:"Image tag?", options:["<img>","<pic>","<image>","<src>"], answer:0},
+{q:"Variable keyword?", options:["let","int","varr","define"], answer:0},
+{q:"JS framework?", options:["React","Laravel","Django","Spring"], answer:0},
+{q:"CSS full form?", options:["Cascading Style Sheet","Code Style","None","System"], answer:0},
+{q:"Comment symbol?", options:["//","##","**","@@"], answer:0},
+{q:"Link tag?", options:["<a>","<linker>","<href>","<url>"], answer:0},
+{q:"DOM stands for?", options:["Document Object Model","Data","Design","None"], answer:0},
+{q:"Backend?", options:["Node.js","HTML","CSS","Bootstrap"], answer:0},
+{q:"Database?", options:["MySQL","HTML","CSS","JS"], answer:0}
+];
+
+let i = 0;
+let score = 0;
+let time = 15;
+let timer;
+
+/* LOAD QUESTION */
+function loadQ(){
+
+clearInterval(timer);
+time = 15;
+
+document.getElementById("timer").innerText = "⏳ Time Left: 15s";
+
+document.getElementById("progress").innerText =
+`📚 Question ${i+1} of ${questions.length}`;
+
+updateLevel();
+
+let q = questions[i];
+
+document.getElementById("question").innerText = q.q;
+
+let optBox = document.getElementById("options");
+optBox.innerHTML = "";
+
+q.options.forEach((opt, idx) => {
+
+let b = document.createElement("button");
+b.classList.add("option");
+b.innerText = opt;
+
+b.onclick = () => check(idx);
+
+optBox.appendChild(b);
+
+});
+
+startTimer();
+}
+
+/* LEVEL SYSTEM */
+function updateLevel(){
+
+if(i < 4)
+document.getElementById("level").innerText = "Level: Easy 😊";
+else if(i < 8)
+document.getElementById("level").innerText = "Level: Medium ⚡";
+else
+document.getElementById("level").innerText = "Level: Hard 🔥";
+
+}
+
+/* TIMER */
+function startTimer(){
+
+timer = setInterval(() => {
+
+time--;
+
+document.getElementById("timer").innerText =
+`⏳ Time Left: ${time}s`;
+
+if(time == 0){
+nextQ();
+}
+
+}, 1000);
+
+}
+
+/* CHECK ANSWER */
+function check(ans){
+
+if(ans == questions[i].answer){
+score++;
+}
+
+document.getElementById("nextBtn").disabled = false;
+
+}
+
+/* NEXT QUESTION */
+function nextQ(){
+
+clearInterval(timer);
+i++;
+
+if(i < questions.length){
+loadQ();
+}else{
+showResult();
+}
+
+}
+
+document.getElementById("nextBtn").onclick = nextQ;
+
+/* RESULT */
+function showResult(){
+
+document.getElementById("quizBox").classList.add("hidden");
+document.getElementById("resultBox").classList.remove("hidden");
+
+let wrong = questions.length - score;
+let per = (score / questions.length) * 100;
+
+document.getElementById("total").innerText = questions.length;
+document.getElementById("correct").innerText = score;
+document.getElementById("wrong").innerText = wrong;
+document.getElementById("percentage").innerText = per.toFixed(2);
+
+document.getElementById("status").innerText =
+per >= 50 ? "🎉 PASS" : "😔 FAIL";
+
+}
+
+/* DARK MODE */
+document.getElementById("themeBtn").onclick = () => {
+document.body.classList.toggle("dark");
+};
+
+/* RESTART */
+function restartQuiz(){
+i = 0;
+score = 0;
+document.getElementById("quizBox").classList.remove("hidden");
+document.getElementById("resultBox").classList.add("hidden");
+loadQ();
+}
+
+/* START */
+loadQ();
+
+</script>
+
+</body>
+</html>
